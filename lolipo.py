@@ -103,7 +103,12 @@ class Lolipo:
             slt_date = datetime.datetime.strftime(date, '%y%m%d')
 
             print(slt_date)
-            self.get_access_log_date(slt_date, save_dir)
+            file_path = self.get_access_log_date(slt_date, save_dir)
+            if file_path:
+                print('Saved: ' + file_path)
+            else:
+                print('not exists')
+
             time.sleep(0.5)
 
     def get_access_log_date(self, slt_date, save_dir):
@@ -116,7 +121,6 @@ class Lolipo:
         res = requests.post(url, params, cookies=cookies)
 
         if res.headers['Content-Type'] != 'application/octet-stream':
-            print('not exists')
             return
 
         content_disposition = res.headers['Content-Disposition']
@@ -128,8 +132,7 @@ class Lolipo:
         with open(file_path, 'wb') as f:
             f.write(res.content)
 
-        print('Saved: ' + file_path)
-
+        return file_path
 
 if __name__ == '__main__':
     lolipo_domain = sys.argv[1]
