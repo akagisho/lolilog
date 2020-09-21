@@ -14,8 +14,9 @@ class Lolipo:
     def __init__(self):
         None
 
-    def get_lolipo_domains(self, html):
-        soup = BeautifulSoup(html, 'html.parser')
+    def get_lolipo_domains(self):
+        res = requests.get(self.URL_TOP)
+        soup = BeautifulSoup(res.text, 'html.parser')
         select = soup.find('select', {'id': 'domain-id'})
 
         domains = {}
@@ -26,10 +27,8 @@ class Lolipo:
         return domains
 
     def login(self, account, domain, passwd):
-        res = requests.get(self.URL_TOP)
-
         domain_id = None
-        domains = self.get_lolipo_domains(res.text)
+        domains = self.get_lolipo_domains()
         for key in domains.keys():
             if domains[key] == domain:
                 domain_id = key
@@ -86,10 +85,7 @@ class Lolipo:
 
         return domain_id
 
-    def get_access_log(self, save_dir, domain = None):
-        if not os.path.isdir(save_dir):
-            os.makedirs(save_dir)
-
+    def set_domain(self, domain = None):
         domain_id = 'lolipopDomain'
         if domain:
             domain_id = self.get_domain_id(domain)
@@ -97,34 +93,43 @@ class Lolipo:
         url = self.URL_ANALYZE + '&exec=setting&id=' + domain_id
         cookies = dict(LLPPSESSID = self.sessid)
         res = requests.get(url, cookies=cookies)
-        
+
+    def get_access_log(self, save_dir, domain = None):
+        self.set_domain(domain)
+
         today = datetime.datetime.today()
         for i in range(-90, -1):
             date = today + datetime.timedelta(days=i)
             slt_date = datetime.datetime.strftime(date, '%y%m%d')
 
             print(slt_date)
+            self.get_access_log_date(slt_date, save_dir)
             time.sleep(0.5)
 
-            params = {'sltDate': slt_date}
-            url = self.URL_ANALYZE + '&exec=download&id=' + domain_id
-            cookies = dict(LLPPSESSID = self.sessid)
-            res = requests.post(url, params, cookies=cookies)
+    def get_access_log_date(self, slt_date, save_dir):
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
 
-            if res.headers['Content-Type'] != 'application/octet-stream':
-                print('not exists')
-                continue
+        params = {'sltDate': slt_date}
+        url = self.URL_ANALYZE + '&exec=download'
+        cookies = dict(LLPPSESSID = self.sessid)
+        res = requests.post(url, params, cookies=cookies)
 
-            content_disposition = res.headers['Content-Disposition']
-            attribute = 'filename='
-            file_name = content_disposition[content_disposition.find(attribute) + len(attribute):]
-            file_name = file_name.replace('"', '')
+        if res.headers['Content-Type'] != 'application/octet-stream':
+            print('not exists')
+            return
 
-            file_path = save_dir + '/' + file_name
-            with open(file_path, 'wb') as f:
-                f.write(res.content)
+        content_disposition = res.headers['Content-Disposition']
+        attribute = 'filename='
+        file_name = content_disposition[content_disposition.find(attribute) + len(attribute):]
+        file_name = file_name.replace('"', '')
 
-            print('Saved: ' + file_path)
+        file_path = save_dir + '/' + file_name
+        with open(file_path, 'wb') as f:
+            f.write(res.content)
+
+        print('Saved: ' + file_path)
+
 
 if __name__ == '__main__':
     lolipo_domain = sys.argv[1]
