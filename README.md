@@ -9,7 +9,7 @@ $ pip install -r requirements.txt
 ## usage
 
 ```
-$ python lolilog.py LOLIPO_DOMAIN PASSWORD [SAVE_DIR] [MY_DOMAIN]
+$ python lolipo.py LOLIPO_DOMAIN PASSWORD [SAVE_DIR] [MY_DOMAIN]
 ```
 
 * `LOLIPO_DOMAIN`: lolipop domain (ex. `example.main.jp`)
