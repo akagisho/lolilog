@@ -98,7 +98,7 @@ class Lolipo:
         self.set_domain(domain)
 
         today = datetime.datetime.today()
-        for i in range(-90, -1):
+        for i in range(-90, 0):
             date = today + datetime.timedelta(days=i)
             slt_date = datetime.datetime.strftime(date, '%y%m%d')
 
